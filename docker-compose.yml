@@ -1,0 +1,17 @@
+# DO NOT EDIT
+# The .env file has everything you need to edit.
+
+version: '3.8'
+services:
+  proxy:
+    image: git.sterul.com:5005/opencookbook/opencookbook-proxy:${tag}
+    restart: always
+    ports:
+      - ${httpPort}:80
+    depends_on:
+      - backend
+
+
+  backend:
+    image: git.sterul.com:5005/opencookbook/opencookbook:${tag}
+    restart: always
