@@ -10,6 +10,8 @@ services:
       - ${httpPort}:80
     depends_on:
       - backend
+    environment:
+      - DEBUG_MODE=${DEBUG_MODE}
 
 
   backend:
