@@ -10,9 +10,13 @@ services:
       - ${httpPort}:80
     depends_on:
       - backend
+      - frontend
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
 
+  frontend:
+    image: git.sterul.com:5005/opencookbook/react-native-frontend:qa
+    restart: always
 
   backend:
     image: git.sterul.com:5005/opencookbook/opencookbook:${tag}
