@@ -15,7 +15,7 @@ services:
       - DEBUG_MODE=${DEBUG_MODE}
 
   frontend:
-    image: git.sterul.com:5005/opencookbook/react-native-frontend:${tag}
+    image: git.sterul.com:5005/opencookbook/opencookbook-frontend:${tag}
     restart: always
 
   backend:
