@@ -19,5 +19,5 @@ services:
     restart: always
 
   backend:
-    image: git.sterul.com:5005/opencookbook/opencookbook:${tag}
+    image: git.sterul.com:5005/opencookbook/opencookbook-apiserver:${tag}
     restart: always
