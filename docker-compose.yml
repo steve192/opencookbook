@@ -21,3 +21,7 @@ services:
   backend:
     image: git.sterul.com:5005/opencookbook/opencookbook-apiserver:${tag}
     restart: always
+    volumes:
+      - opencookbook-db:/opencookbook/database
+volumes:
+  opencookbook-db:
