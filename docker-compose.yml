@@ -23,5 +23,6 @@ services:
     restart: always
     volumes:
       - opencookbook-db:/opencookbook/database
+      - opencookbook-images:/opencookbook/recipe-images
 volumes:
   opencookbook-db:
