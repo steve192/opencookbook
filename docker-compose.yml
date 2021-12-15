@@ -26,3 +26,4 @@ services:
       - opencookbook-images:/opencookbook/recipe-images
 volumes:
   opencookbook-db:
+  opencookbook-images:
