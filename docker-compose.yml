@@ -24,6 +24,8 @@ services:
     volumes:
       - opencookbook-db:/opencookbook/database
       - opencookbook-images:/opencookbook/recipe-images
+    environment:
+      - JWT_SECRET=${jwtToken}
 volumes:
-  opencookbook-db:
-  opencookbook-images:
+  opencookbook-db: null
+  opencookbook-images: null
