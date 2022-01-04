@@ -35,7 +35,6 @@ cd opencookbook
 ```
 
 2. Edit the environment variables in the ```.env``` file to your personal needs\
-**IMPORTANT: Change the jwtToken variable or your installation is insecure**
 
 3. Start docker-compose
 ```
