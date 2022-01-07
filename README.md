@@ -31,10 +31,10 @@ OpenCookbook is designed to run without extensive preparation and installation. 
 1. Download this git repository
 ```
 git clone https://github.com/steve192/opencookbook
-cd opencookbook
+cd opencookbook/compose
 ```
 
-2. Edit the environment variables in the ```.env``` file to your personal needs\
+2. Edit the environment variables in the ```.env``` file to your personal needs
 
 3. Start docker-compose
 ```
@@ -42,6 +42,20 @@ docker-compose -d up
 ```
 ### Installation on kubernetes
 TODO
+
+## Structure
+This project is structured into different modules
+### opencookbook (this repo)
+A repository containing an overview on the whole project. It contains general documentation, installation instructions and deployment configs such as docker-compose and kubernetes deployments
+### [opencookbook-frontend](https://github.com/steve192/opencookbook-frontend)
+<img src="https://shields.io/github/v/release/steve192/opencookbook-frontend?display_name=tag&sort=semver&label=frontend&logo=github"/>\
+The frontend for opencookbook.
+### [opencookbook-apiserver](https://github.com/steve192/opencookbook-apiserver)
+<img src="https://shields.io/github/v/release/steve192/opencookbook-apiserver?display_name=tag&sort=semver&label=apiserver&logo=github"/>\
+The the backend/apiserver for opencookbook
+### [opencookbook-proxy](https://github.com/steve192/opencookbook-proxy)
+<img src="https://shields.io/github/v/release/steve192/opencookbook-proxy?display_name=tag&sort=semver&label=proxy&logo=github"/>\
+A proxy wiring up the frontend and apiserver. Basically nginx with routes configured (route /api to apiserver and the rest to frontend)
 ## Motivation
 Since i like to cook in my free time and i am a person who likes to get the same taste every time i cook the same meal, i use a variety of recipes with exact instructions and ingredients. i use either family recipes or recipes from the various cooking sites on the internet.
 

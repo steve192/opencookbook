@@ -1,0 +1,29 @@
+# DO NOT EDIT
+# The .env file has everything you need to edit.
+
+version: '3.8'
+services:
+  proxy:
+    image: ghcr.io/steve192/opencookbook-proxy:${tag}
+    restart: always
+    ports:
+      - ${httpPort}:80
+    depends_on:
+      - backend
+      - frontend
+    environment:
+      - DEBUG_MODE=${DEBUG_MODE}
+
+  frontend:
+    image: ghcr.io/steve192/opencookbook-frontend:${tag}
+    restart: always
+
+  backend:
+    image: ghcr.io/steve192/opencookbook-apiserver:${tag}
+    restart: always
+    volumes:
+      - ${DATABASE_MOUNT_DIR}:/opencookbook/database
+      - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
+volumes:
+  internal-opencookbook-db: null
+  internal-opencookbook-images: null
