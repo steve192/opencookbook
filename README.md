@@ -7,21 +7,19 @@ It also supports importing from various cooking sites on the internet.
 
 
 ## Features
+![dsd](assets/cookpal-video4.gif )
 ### My Recipes
 The base feature. A way to manage your recipes, search for recipes, organize your recipes in various groups.
 
 Every recipe has ingredients and preparation steps. Besides your recipe, they are used to estimate the calories and nutrients of your recipe.
 
 ### Recipe Import
-Recipes can be imported from
-```
-chefkoch.de
-```
+Recipes can be imported from various recipe websites to have all your favorite recipes in one place
 ### Weekplan
-TODO
+No more indecision about what to cook today. Plan your meals in advance and let cookpal support your selections.
 
 ### Guided cooking
-TODO
+What ingredients need to go in next? Cookpal will tell you.
 
 ## Installation
 OpenCookbook is designed to run without extensive preparation and installation. All you need is a docker or kubernetes environment and you are good to go.
@@ -43,6 +41,14 @@ docker-compose -d up
 ### Installation on kubernetes
 TODO
 
+## Roadmap
+- Complete management of recipes (create, search, manage)🚧
+- Mealplanning in advance (manual)✔️
+- Mealplanning in advance (automatic suggestions)🚧
+- Automatic calculation of calories🚧
+- Advanced guided cooking (hands-free etc.)🚧
+- And of course all your suggestions :)
+
 ## Structure
 This project is structured into different modules
 ### opencookbook (this repo)
@@ -52,7 +58,8 @@ A repository containing an overview on the whole project. It contains general do
 The frontend for opencookbook.
 ### [opencookbook-apiserver](https://github.com/steve192/opencookbook-apiserver)
 <img src="https://shields.io/github/v/release/steve192/opencookbook-apiserver?display_name=tag&sort=semver&label=apiserver&logo=github"/>\
-The the backend/apiserver for opencookbook
+The the backend/apiserver for opencookbook.
+API documentation is available here: https://beta.cookpal.io/api-docs
 ### [opencookbook-proxy](https://github.com/steve192/opencookbook-proxy)
 <img src="https://shields.io/github/v/release/steve192/opencookbook-proxy?display_name=tag&sort=semver&label=proxy&logo=github"/>\
 A proxy wiring up the frontend and apiserver. Basically nginx with routes configured (route /api to apiserver and the rest to frontend)
