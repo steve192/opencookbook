@@ -18,9 +18,15 @@ services:
     image: ghcr.io/steve192/opencookbook-frontend:${tag}
     restart: always
 
+  recipe-scrapers:
+    image: ghcr.io/steve192/recipe-scrapers-webservice:latest
+    restart: always
+
   backend:
     image: ghcr.io/steve192/opencookbook-apiserver:${tag}
     restart: always
+    depends_on:
+      - recipe-scrapers
     volumes:
       - ${DATABASE_MOUNT_DIR}:/opencookbook/database
       - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
