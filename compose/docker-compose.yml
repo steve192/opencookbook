@@ -19,6 +19,7 @@ services:
       - SMTP_PROTOCOL=${SMTP_PROTOCOL}
       - SMTP_STARTTLS=${SMTP_STARTTLS}
       - MAIL_FROM=${MAIL_FROM}
+      - INSTANCE_URL=${INSTANCE_URL}
 
   frontend:
     image: ghcr.io/steve192/opencookbook-frontend:${tag}
