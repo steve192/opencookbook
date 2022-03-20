@@ -8,6 +8,8 @@ services:
     restart: always
     ports:
       - ${httpPort}:80
+    environment:
+      - DEBUG_MODE=${DEBUG_MODE}
     depends_on:
       - backend
       - frontend
