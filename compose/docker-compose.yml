@@ -11,15 +11,6 @@ services:
     depends_on:
       - backend
       - frontend
-    environment:
-      - DEBUG_MODE=${DEBUG_MODE}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USERNAME=${SMTP_USERNAME}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_PROTOCOL=${SMTP_PROTOCOL}
-      - SMTP_STARTTLS=${SMTP_STARTTLS}
-      - MAIL_FROM=${MAIL_FROM}
-      - INSTANCE_URL=${INSTANCE_URL}
 
   frontend:
     image: ghcr.io/steve192/opencookbook-frontend:${tag}
@@ -34,6 +25,15 @@ services:
     restart: always
     depends_on:
       - recipe-scrapers
+    environment:
+      - DEBUG_MODE=${DEBUG_MODE}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_PROTOCOL=${SMTP_PROTOCOL}
+      - SMTP_STARTTLS=${SMTP_STARTTLS}
+      - MAIL_FROM=${MAIL_FROM}
+      - INSTANCE_URL=${INSTANCE_URL}
     volumes:
       - ${DATABASE_MOUNT_DIR}:/opencookbook/database
       - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
