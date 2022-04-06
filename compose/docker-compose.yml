@@ -29,6 +29,7 @@ services:
       - recipe-scrapers
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
+      - DB_PASSWORD=${DB_PASSWORD}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USERNAME=${SMTP_USERNAME}
@@ -37,7 +38,9 @@ services:
       - SMTP_STARTTLS=${SMTP_STARTTLS}
       - MAIL_FROM=${MAIL_FROM}
       - INSTANCE_URL=${INSTANCE_URL}
+      - TERMS_OF_SERVICE_FILE_LOCATION=/opencookbook/tos.html
     volumes:
+      - ${TERMS_OF_SERVICE_FILE_LOCATION}:/opencookbook/tos.html
       - ${DATABASE_MOUNT_DIR}:/opencookbook/database
       - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
 volumes:
