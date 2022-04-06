@@ -32,7 +32,9 @@ git clone https://github.com/steve192/opencookbook
 cd opencookbook/compose
 ```
 
-2. Edit the environment variables in the ```.env``` file to your personal needs
+2. Edit the environment variables in the ```.env``` file to your personal needs.
+
+❗ IMPORTANT ❗ at lease change the passwords defined in the ```.env``` file or your installation will be vulnerable
 
 3. Start docker-compose
 ```
