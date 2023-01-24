@@ -30,6 +30,8 @@ services:
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
       - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_URI=${DB_URI}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USERNAME=${SMTP_USERNAME}
