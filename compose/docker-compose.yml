@@ -27,6 +27,7 @@ services:
     restart: always
     depends_on:
       - recipe-scrapers
+      - postgres
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -45,6 +46,15 @@ services:
       - ${TERMS_OF_SERVICE_FILE_LOCATION}:/opencookbook/tos.html
       - ${DATABASE_MOUNT_DIR}:/opencookbook/database
       - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=cookpal
+    volumes:
+      - ${DATABASE_MOUNT_DIR}/postgres:/var/lib/postgresql/data
+
 volumes:
   internal-opencookbook-db: null
   internal-opencookbook-images: null
