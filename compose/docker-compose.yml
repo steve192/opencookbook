@@ -10,6 +10,8 @@ services:
       - ${httpPort}:80
     environment:
       - DEBUG_MODE=${DEBUG_MODE}
+      # Becomes client_max_body_size. The backend gets the same number below.
+      - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-30}
     depends_on:
       - backend
       - frontend
@@ -41,10 +43,20 @@ services:
       - SMTP_STARTTLS=${SMTP_STARTTLS}
       - MAIL_FROM=${MAIL_FROM}
       - INSTANCE_URL=${INSTANCE_URL}
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=${MAX_UPLOAD_SIZE_MB:-30}MB
       - TERMS_OF_SERVICE_FILE_LOCATION=/opencookbook/tos.html
+      # ML Subsystem (experimental not published yet)
+      - OPENCOOKBOOK_ML_SERVICEURL=${ML_SERVICE_URL}
+      - OPENCOOKBOOK_ML_APITOKEN=${ML_API_TOKEN}
+      - OPENCOOKBOOK_ML_SUBMITTERSALT=${ML_SUBMITTER_SALT}
+      - OPENCOOKBOOK_ML_REQUESTTIMEOUTSECONDS=${ML_REQUEST_TIMEOUT_SECONDS:-30}
+      - OPENCOOKBOOK_ML_JOBTIMEOUTSECONDS=${ML_JOB_TIMEOUT_SECONDS:-300}
+      - OPENCOOKBOOK_ML_JOBRETENTIONHOURS=${ML_JOB_RETENTION_HOURS:-24}
+      - OPENCOOKBOOK_ML_RECIPEOCR_ENABLED=${ML_RECIPE_OCR_ENABLED:-true}
+      - OPENCOOKBOOK_ML_RECIPEOCR_JOBSPERUSERPERDAY=${ML_JOBS_PER_USER_PER_DAY:-20}
+      - OPENCOOKBOOK_ML_RECIPEOCR_MAXPAGES=${ML_MAX_PAGES:-6}
     volumes:
-      - ${TERMS_OF_SERVICE_FILE_LOCATION}:/opencookbook/tos.html
-      - ${DATABASE_MOUNT_DIR}:/opencookbook/database
+      - ${TERMS_OF_SERVICE_FILE_LOCATION:-./tos.html}:/opencookbook/tos.html
       - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
   postgres:
     image: postgres:16-alpine
@@ -54,7 +66,3 @@ services:
       - POSTGRES_DB=cookpal
     volumes:
       - ${DATABASE_MOUNT_DIR}/postgres:/var/lib/postgresql/data
-
-volumes:
-  internal-opencookbook-db: null
-  internal-opencookbook-images: null
