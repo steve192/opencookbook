@@ -46,7 +46,6 @@ services:
       - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-30}
       - MAX_IMAGE_SIZE_MB=${MAX_IMAGE_SIZE_MB:-10}
       - TERMS_OF_SERVICE_FILE_LOCATION=/opencookbook/tos.html
-      - OPENCOOKBOOK_NUTRITION_ENABLED=${NUTRITION_ENABLED:-false}
       # ML Subsystem (experimental not published yet)
       - OPENCOOKBOOK_ML_SERVICEURL=${ML_SERVICE_URL}
       - OPENCOOKBOOK_ML_APITOKEN=${ML_API_TOKEN}
