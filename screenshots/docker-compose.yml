@@ -1,0 +1,58 @@
+# Everything the screenshots need, started by run.sh from the published images. Nothing is
+# published to the host; the runner reaches the other services on this project's own network.
+name: cookpal-screenshots
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=cookpal
+      - POSTGRES_PASSWORD=screenshots
+      - POSTGRES_DB=cookpal
+    # Gone with the container, so every stack starts from an empty database.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U cookpal
+      interval: 2s
+      retries: 30
+
+  apiserver:
+    image: ghcr.io/steve192/opencookbook-apiserver:${APISERVER_TAG:-latest}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB_URI=jdbc:postgresql://postgres:5432/cookpal
+      - DB_USERNAME=cookpal
+      - DB_PASSWORD=screenshots
+      - INSTANCE_URL=http://web
+      - OPENCOOKBOOK_ALLOWSIGNUP=true
+      - OPENCOOKBOOK_ACTIVATEUSERSAFTERSIGNUP=true
+      # No ML subsystem; the scanning shot answers page detection in the browser.
+      - OPENCOOKBOOK_ML_SERVICEURL=
+    healthcheck:
+      test: curl -sf -o /dev/null http://localhost:8080/api/v1/instance
+      interval: 5s
+      start_period: 5m
+
+  web:
+    image: ghcr.io/steve192/opencookbook-frontend:${FRONTEND_TAG:-latest}
+    healthcheck:
+      test: curl -sf -o /dev/null http://localhost/
+      interval: 2s
+      retries: 30
+
+  runner:
+    build: .
+    profiles: [runner]
+    user: ${HOST_UID:-1000}:${HOST_GID:-1000}
+    environment:
+      - HOME=/tmp
+      - COOKPAL_WEB_URL=http://web
+      - COOKPAL_API_URL=http://apiserver:8080
+    volumes:
+      - ./out:/app/out
+      - ./assets/photos:/app/assets/photos
+    # Chromium needs more shared memory than Docker's default.
+    shm_size: 1gb
