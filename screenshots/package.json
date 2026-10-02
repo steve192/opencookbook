@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Seeds a demo cookbook and takes store screenshots of the Cookpal web app",
   "devDependencies": {
-    "playwright": "1.62.1"
+    "playwright": "1.62.1",
+    "sharp": "0.35.5"
   }
 }

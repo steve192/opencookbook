@@ -20,6 +20,12 @@ Screenshots are written to `out/<language>/phone/`, 1080 x 2160, in dark mode:
 | 04 | Shopping list | Items sorted into aisles, with icons |
 | 05 | Guided cooking | A step with highlighted ingredients, one ticked, a running timer and one ready to start |
 | 06 | Recipe scanning | A cookbook page with one corner being dragged into place, magnifier showing |
+| 07 | Recipe import | The import screen with a recipe link typed in, not yet imported |
+| 08 | Nutrition | Shakshuka with its nutrition sheet open |
+| 09 | Week suggestion | The week the planner proposes for next week, before it is accepted |
+| 10 | Household | A household of two: the demo user and a second member |
+
+The store listing uses the first six. The last four are for the landing page.
 
 ## Options
 
@@ -27,15 +33,35 @@ Screenshots are written to `out/<language>/phone/`, 1080 x 2160, in dark mode:
 ./run.sh --tag v1.21.1                    # both images at this tag (default: latest)
 ./run.sh --apiserver-tag main --frontend-tag v1.18.3
 ./run.sh --lang de --only weekplan,shopping-list
+./run.sh --tag local --no-pull            # images built locally: nothing is pulled
+./run.sh --landing-out ../../opencookbook-frontend/landing   # see "Screenshots for the landing page"
 ./run.sh --keep                           # leave the apps running for the next run; stop with ./run.sh down
 ```
 
 The images are `ghcr.io/steve192/opencookbook-apiserver` and `ghcr.io/steve192/opencookbook-frontend`,
-pulled on every run so that `latest` is always the newest release. Everything runs in the Compose
+pulled on every run so that `latest` is always the newest release; `--no-pull` skips that, for images
+that only exist locally. Everything runs in the Compose
 project `cookpal-screenshots`. Its database lives in memory, and no port is opened on the host. When
 the run ends, it is removed again unless `--keep` is given.
 
 If a shot fails, the screen at that moment is saved as `*.failed.png` next to where the shot would have gone.
+
+## Screenshots for the landing page
+
+Besides the store screenshots, every shot is written as a 720 px wide WebP (quality 90) to
+`out/landing/src/assets/screenshots/<language>/<name>.webp`, and a 1200 x 630 social preview banner (the app
+icon, the name, a tagline and three screenshots) to `out/landing/public/og-<language>.png`. `out/landing` is
+cleared at the start of every run. The banner needs the `recipe-list`, `recipe-detail` and `weekplan` shots, so
+a run that leaves them out with `--only` does not render it.
+
+`out/landing` is laid out like the landing project. `--landing-out` copies it over the landing project as it is:
+
+```sh
+./run.sh --tag local --no-pull --landing-out ../../opencookbook-frontend/landing
+```
+
+The directory must be the landing project (it has an `astro.config.mjs`); anything else is refused
+before the run starts.
 
 ## Changing things
 
@@ -44,6 +70,10 @@ If a shot fails, the screen at that moment is saved as `*.failed.png` next to wh
 - Recipes, groups, week plan, shopping list and the scanned page: `src/sample-data.mjs`.
 - Screen size, more devices (such as tablets), and light or dark mode: `DEVICES` and `COLOR_SCHEME` in
   `src/take-screenshots.mjs`.
+
+The web app is served below `/app`, so every page the shots open is `http://web/app/...`. The household
+is only created when the household shot runs, because with one the week plan, the shopping list and the
+recipe list grow switchers that the other shots should not show. That is why it is the last shot.
 
 Changes are picked up on the next `./run.sh`, which rebuilds the runner image from this folder.
 

@@ -9,6 +9,8 @@ import path from 'node:path';
 import {parseArgs} from 'node:util';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
+import sharp from 'sharp';
+import {renderBanner} from './banner.mjs';
 import {LANGUAGES} from './sample-data.mjs';
 import {renderScanPhoto} from './scan-photo.mjs';
 import {seed} from './seed.mjs';
@@ -32,6 +34,20 @@ const DEVICES = [
 
 const LOCALES = {en: 'en-US', de: 'de-DE'};
 
+// The landing page gets the phone shots as small WebP files, named without their number, and the
+// banner. They are laid out like the landing project, so that run.sh can copy them over as they are.
+const LANDING_OUT = path.join(OUT_DIR, 'landing');
+const landingShotDir = (lang) => path.join(LANDING_OUT, 'src', 'assets', 'screenshots', lang);
+const LANDING_DEVICE = 'phone';
+const LANDING_WIDTH = 720;
+const LANDING_QUALITY = 90;
+
+// The screenshots of the social preview banner, left to right.
+const BANNER_SHOTS = ['recipe-list', 'recipe-detail', 'weekplan'];
+
+// The web app is served below /app; the root belongs to the landing page.
+const APP_URL = `${WEB_URL}/app`;
+
 // The app follows the system theme unless told otherwise in its settings.
 const COLOR_SCHEME = 'dark';
 
@@ -44,6 +60,11 @@ const shots = args.only ? SHOTS.filter((shot) => args.only.split(',').includes(s
 if (shots.length === 0) {
   throw new Error(`No shot is called ${args.only}; there are ${SHOTS.map((shot) => shot.name).join(', ')}`);
 }
+
+// The banner needs three particular shots, which a run with --only may leave out.
+const takesBanner = BANNER_SHOTS.every((name) => shots.some((shot) => shot.name === name));
+
+const shotFile = (dir, name) => path.join(dir, `${String(SHOTS.findIndex((shot) => shot.name === name) + 1).padStart(2, '0')}-${name}.png`);
 
 const reachable = async (url) => fetch(url).then(() => true, () => false);
 for (const [what, url] of [['web app', WEB_URL], ['apiserver', `${API_URL}/api/v1/instance`]]) {
@@ -60,6 +81,9 @@ const settle = async (page) => {
   await page.waitForTimeout(800);
 };
 
+// Clears what an earlier run left, so that only this run's pictures get copied to the landing page.
+await fs.rm(LANDING_OUT, {recursive: true, force: true});
+
 // In Docker the app is served from plain http addresses that are not localhost; Chromium would
 // hold back what it reserves for secure pages, such as crypto.randomUUID.
 const browser = await chromium.launch({
@@ -74,6 +98,7 @@ try {
     for (const device of DEVICES) {
       const dir = path.join(OUT_DIR, lang, device.name);
       await fs.mkdir(dir, {recursive: true});
+      await fs.mkdir(landingShotDir(lang), {recursive: true});
 
       for (const [index, shot] of shots.entries()) {
         const context = await browser.newContext({
@@ -89,14 +114,18 @@ try {
         }, {token: account.token, refreshToken: account.refreshToken, apiUrl: API_URL});
         const page = await context.newPage();
         const go = async (route) => {
-          await page.goto(`${WEB_URL}/${route}`);
+          await page.goto(`${APP_URL}/${route}`);
           await settle(page);
         };
 
-        const file = path.join(dir, `${String(SHOTS.indexOf(shot) + 1).padStart(2, '0')}-${shot.name}.png`);
+        const file = shotFile(dir, shot.name);
         try {
-          await shot.open({page, go, labels: labelsFor(lang), recipeIds: account.recipeIds, scanPhoto});
+          await shot.open({page, go, settle, labels: labelsFor(lang), scanPhoto, ...account});
           await page.screenshot({path: file});
+          if (device.name === LANDING_DEVICE) {
+            await sharp(file).resize({width: LANDING_WIDTH}).webp({quality: LANDING_QUALITY})
+                .toFile(path.join(landingShotDir(lang), `${shot.name}.webp`));
+          }
           console.log(`[${lang}] ${index + 1}/${shots.length} ${path.relative(root, file)}`);
         } catch (error) {
           await page.screenshot({path: file.replace(/\.png$/, '.failed.png')}).catch(() => undefined);
@@ -105,6 +134,17 @@ try {
           await context.close();
         }
       }
+    }
+
+    if (takesBanner) {
+      const phoneDir = path.join(OUT_DIR, lang, LANDING_DEVICE);
+      const screenshotFiles = BANNER_SHOTS.map((name) => shotFile(phoneDir, name));
+      const outFile = path.join(LANDING_OUT, 'public', `og-${lang}.png`);
+      await fs.mkdir(path.dirname(outFile), {recursive: true});
+      await renderBanner(browser, {lang, iconUrl: `${APP_URL}/icons/icon-512.png`, screenshotFiles, outFile});
+      console.log(`[${lang}] ${path.relative(root, outFile)}`);
+    } else {
+      console.log(`[${lang}] no banner: it needs ${BANNER_SHOTS.join(', ')}`);
     }
   }
 } finally {
