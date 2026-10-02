@@ -6,12 +6,12 @@ import {randomUUID} from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
-  DISPLAY_NAME, GROUPS, recipesIn, recipeTitle, shoppingIn, weekIn,
+  DISPLAY_NAME, GROUPS, HOUSEHOLD_NAME, PARTNER_NAME, PLANNING_PROFILE, recipesIn, recipeTitle, shoppingIn, weekIn,
 } from './sample-data.mjs';
 
 const PASSWORD = 'screenshots-demo-password';
 
-const accountFor = (lang) => ({email: `screenshots-${lang}@example.com`, password: PASSWORD});
+const accountFor = (lang, role = '') => ({email: `screenshots-${lang}${role}@example.com`, password: PASSWORD});
 
 class Api {
   constructor(baseUrl, lang) {
@@ -59,8 +59,8 @@ const isoDay = (monday, offset) => {
  * Starts the account over: deleted if it exists, then signed up again. Needs an apiserver that
  * activates accounts on signup, which docker-compose.yml configures.
  */
-const freshAccount = async (api) => {
-  const {email, password} = accountFor(api.lang);
+const freshAccount = async (api, role = '') => {
+  const {email, password} = accountFor(api.lang, role);
   const existing = await api.call('POST', '/users/login', {emailAddress: email, password}, {allowFailure: true});
   if (existing.ok) {
     api.token = existing.data.token;
@@ -82,6 +82,18 @@ const uploadPhoto = async (api, photosDir, photo) => {
   const form = new FormData();
   form.append('image', new Blob([bytes], {type: 'image/jpeg'}), `${photo}.jpg`);
   return (await api.post('/recipes-images', form)).uuid;
+};
+
+// The apiserver imports the catalogue after it has started. Recipes saved before the matcher is
+// ready keep unlinked ingredients, which the nutrition sheet then shows as unknown.
+const waitForCatalogue = async (api) => {
+  for (let attempt = 0; attempt < 120; attempt++) {
+    if ((await api.get('/catalogue/search?q=egg&limit=1')).length > 0) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  throw new Error('The ingredient catalogue is still not ready after four minutes.');
 };
 
 const seedRecipes = async (api, photosDir) => {
@@ -141,18 +153,54 @@ const seedShoppingList = async (api, monday) => {
   await api.post(`/shopping/lists/${list.id}/ops?since=0`, {ops});
 };
 
+// Not part of seed(): a household adds switchers to the week plan, the shopping list and the recipe list,
+// which the other screenshots should not show. The household shot calls it right before it is taken.
+const seedHousehold = async (api, apiUrl) => {
+  const partner = new Api(apiUrl, api.lang);
+  await freshAccount(partner, '-partner');
+  await partner.post('/users/self/onboarding', {displayName: PARTNER_NAME});
+
+  const household = await api.post('/households', {name: HOUSEHOLD_NAME, shareRecipes: true});
+  const invite = await api.post(`/households/${household.id}/invites`);
+  await partner.post(`/household-invites/${invite.token}/accept`, {shareRecipes: true});
+  return household.id;
+};
+
+// A proposed week for next Monday on, left unaccepted, which is what the planner shows after "Plan my week".
+const seedPlanDraft = async (api, monday) => {
+  const {name, workdays, weekend, meals} = PLANNING_PROFILE;
+  const efforts = [...workdays.map((day) => [day, 'SIMPLE']), ...weekend.map((day) => [day, 'ANY'])];
+  const profile = await api.post('/planning/profiles', {
+    name: name[api.lang],
+    defaultProfile: true,
+    householdSize: 2,
+    cooldownWeeks: 0,
+    leftoversAllowed: true,
+    spreadVariety: true,
+    meals: meals.map((mealType) => ({mealType, days: Object.fromEntries(efforts)})),
+  });
+  const draft = await api.post('/planning/drafts', {profileId: profile.id, startDate: isoDay(monday, 7), days: 7});
+  return draft.id;
+};
+
 /**
  * Creates the demo account for one language and everything in it.
  *
- * @return {Promise<{token: string, refreshToken: string, recipeIds: Record<string, number>}>}
+ * @return {Promise<{token: string, refreshToken: string, recipeIds: Record<string, number>,
+ *   draftId: number, createHousehold: () => Promise<string>}>}
  */
 export const seed = async ({apiUrl, lang, photosDir, now = new Date()}) => {
   const api = new Api(apiUrl, lang);
   const tokens = await freshAccount(api);
   await api.post('/users/self/onboarding', {displayName: DISPLAY_NAME});
+  await waitForCatalogue(api);
   const recipeIds = await seedRecipes(api, photosDir);
   const monday = mondayOf(now);
   await seedWeekplan(api, recipeIds, monday);
   await seedShoppingList(api, monday);
-  return {token: tokens.token, refreshToken: tokens.refreshToken, recipeIds};
+  const draftId = await seedPlanDraft(api, monday);
+  return {
+    token: tokens.token, refreshToken: tokens.refreshToken, recipeIds, draftId,
+    createHousehold: () => seedHousehold(api, apiUrl),
+  };
 };

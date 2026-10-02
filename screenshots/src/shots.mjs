@@ -3,6 +3,8 @@
  * the seeded account, and leaves it looking the way the screenshot should.
  */
 
+import {IMPORT_URL} from './sample-data.mjs';
+
 // The few texts a shot has to find on screen, from the app's en.json and de.json.
 const LABELS = {
   en: {choosePhoto: 'Choose a photo', startTimer: 'Start', longTimer: '45 minutes', tickedIngredient: 'chopped tomatoes'},
@@ -94,6 +96,49 @@ export const SHOTS = [
       await page.mouse.move(fromX + (toX - fromX) * 0.8, fromY + (toY - fromY) * 0.8, {steps: 12});
       await page.waitForTimeout(400);
     },
+  },
+  {
+    name: 'recipe-import',
+    // The link is only typed in; importing it would need the internet.
+    open: async ({page, go}) => {
+      await go('import');
+      const field = page.getByRole('textbox');
+      await field.fill(IMPORT_URL);
+      // Blurred, so the label has floated up and the field is no longer focused.
+      await field.blur();
+      await page.waitForTimeout(600);
+    },
+  },
+  {
+    name: 'nutrition',
+    open: async ({page, go, settle, recipeIds}) => {
+      await go(`recipe?recipeId=${recipeIds.shakshuka}`);
+      await page.getByTestId('nutrition-row').click();
+      await page.getByTestId('nutrition-sheet').waitFor();
+      await settle(page);
+    },
+  },
+  {
+    // The week the planner proposes after "Plan my week", seeded through the API instead of
+    // answered in the wizard, whose questions would not change what the draft shows.
+    name: 'week-suggestion',
+    open: async ({page, go, draftId}) => {
+      await go(`planDraft?draftId=${draftId}`);
+      // The screen jumps down while it loads; scrolled back until it has stayed at the top.
+      const scrollToTop = () => page.evaluate(() => {
+        const scrolled = [...document.querySelectorAll('*')].filter((element) => element.scrollTop > 0);
+        scrolled.forEach((element) => element.scrollTop = 0);
+        return scrolled.length > 0;
+      });
+      for (let stable = 0; stable < 4;) {
+        await page.waitForTimeout(400);
+        stable = await scrollToTop() ? 0 : stable + 1;
+      }
+    },
+  },
+  {
+    name: 'household',
+    open: async ({go, createHousehold}) => go(`household?householdId=${await createHousehold()}`),
   },
 ];
 

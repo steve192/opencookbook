@@ -70,7 +70,7 @@ const RECIPES = [
     title: {en: 'Shakshuka with feta', de: 'Shakshuka mit Feta'},
     ingredients: [
       [4, 'piece', 'eggs', 'Eier'],
-      [1, 'can', 'chopped tomatoes', 'gehackte Tomaten'],
+      [400, 'g', 'chopped tomatoes', 'gehackte Tomaten'],
       [1, 'piece', 'red bell pepper', 'rote Paprika'],
       [1, 'piece', 'onion', 'Zwiebel'],
       [2, 'clove', 'garlic', 'Knoblauch'],
@@ -493,3 +493,18 @@ export const shoppingIn = (lang) => SHOPPING.map(([en, de, spec, recipe, bought]
   recipe,
   bought: bought === true,
 }));
+
+// The second member of the demo household, who is also in the week plan ("Dinner at Sam's").
+export const PARTNER_NAME = 'Sam';
+export const HOUSEHOLD_NAME = 'Alex & Sam';
+
+// A recipe link for the import screen. Nothing is imported, the link is only typed in.
+export const IMPORT_URL = 'https://example.com/shakshuka';
+
+// What the week planner is asked for: lunch and dinner every day, quick on workdays.
+export const PLANNING_PROFILE = {
+  name: {en: 'Our usual week', de: 'Unsere übliche Woche'},
+  workdays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+  weekend: ['SATURDAY', 'SUNDAY'],
+  meals: ['LUNCH', 'DINNER'],
+};

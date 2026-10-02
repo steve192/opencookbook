@@ -1,7 +1,6 @@
 # DO NOT EDIT
 # The .env file has everything you need to edit.
 
-version: '3.8'
 services:
   proxy:
     image: ghcr.io/steve192/opencookbook-proxy:${tag}
@@ -19,6 +18,8 @@ services:
   frontend:
     image: ghcr.io/steve192/opencookbook-frontend:${tag}
     restart: always
+    environment:
+      - LANDING_ENABLED=${LANDING_ENABLED:-false}
 
   recipe-scrapers:
     image: ghcr.io/steve192/recipe-scrapers-webservice:latest
@@ -45,7 +46,6 @@ services:
       - INSTANCE_URL=${INSTANCE_URL}
       - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-30}
       - MAX_IMAGE_SIZE_MB=${MAX_IMAGE_SIZE_MB:-10}
-      - TERMS_OF_SERVICE_FILE_LOCATION=/opencookbook/tos.html
       # ML Subsystem (experimental not published yet)
       - OPENCOOKBOOK_ML_SERVICEURL=${ML_SERVICE_URL}
       - OPENCOOKBOOK_ML_APITOKEN=${ML_API_TOKEN}
@@ -57,7 +57,7 @@ services:
       - OPENCOOKBOOK_ML_RECIPEOCR_JOBSPERUSERPERDAY=${ML_JOBS_PER_USER_PER_DAY:-20}
       - OPENCOOKBOOK_ML_RECIPEOCR_MAXPAGES=${ML_MAX_PAGES:-6}
     volumes:
-      - ${TERMS_OF_SERVICE_FILE_LOCATION:-./tos.html}:/opencookbook/tos.html
+      - ${LEGAL_DIR:-./legal}:/opencookbook/legal:ro
       - ${IMAGES_MOUNT_DIR}:/opencookbook/recipe-images
   postgres:
     image: postgres:16-alpine

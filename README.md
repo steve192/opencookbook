@@ -40,8 +40,11 @@ cd opencookbook/compose
 
 3. Start docker-compose
 ```
-docker-compose -d up
+docker compose up -d
 ```
+
+The app is served at `/app`. `/` opens the app as well, unless `LANDING_ENABLED` shows the Cookpal project page there. The legal texts the app shows (`terms.html`, `privacy.html`, `imprint.html`) go into `compose/legal`, see the README there.
+
 ### Installation on kubernetes
 TODO
 
@@ -63,7 +66,7 @@ The frontend for opencookbook.
 ### [opencookbook-apiserver](https://github.com/steve192/opencookbook-apiserver)
 <img src="https://shields.io/github/v/release/steve192/opencookbook-apiserver?display_name=tag&sort=semver&label=apiserver&logo=github"/>\
 The the backend/apiserver for opencookbook.
-API documentation is available here: https://beta.cookpal.io/api-docs
+API documentation is available here: https://cookpal.io/api-docs
 ### [opencookbook-proxy](https://github.com/steve192/opencookbook-proxy)
 <img src="https://shields.io/github/v/release/steve192/opencookbook-proxy?display_name=tag&sort=semver&label=proxy&logo=github"/>\
 A proxy wiring up the frontend and apiserver. Basically nginx with routes configured (route /api to apiserver and the rest to frontend)
