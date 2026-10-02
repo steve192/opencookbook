@@ -27,8 +27,6 @@ services:
       - DB_USERNAME=cookpal
       - DB_PASSWORD=screenshots
       - INSTANCE_URL=http://web
-      - OPENCOOKBOOK_ALLOWSIGNUP=true
-      - OPENCOOKBOOK_ACTIVATEUSERSAFTERSIGNUP=true
       # No ML subsystem; the scanning shot answers page detection in the browser.
       - OPENCOOKBOOK_ML_SERVICEURL=
     healthcheck:

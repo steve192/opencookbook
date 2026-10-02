@@ -55,11 +55,32 @@ const isoDay = (monday, offset) => {
   return day.toISOString().slice(0, 10);
 };
 
+const ADMIN = {emailAddress: 'screenshots-admin@example.com', password: PASSWORD};
+
 /**
- * Starts the account over: deleted if it exists, then signed up again. Needs an apiserver that
- * activates accounts on signup, which docker-compose.yml configures.
+ * Sets the instance up with the screenshots admin and signs in as that admin. A stack that is
+ * already set up answers 409 SETUP_COMPLETED, then the admin just signs in.
  */
-const freshAccount = async (api, role = '') => {
+const signInAsAdmin = async (apiUrl) => {
+  const admin = new Api(apiUrl, 'en');
+  const setup = await admin.call('POST', '/setup', ADMIN, {allowFailure: true});
+  if (!setup.ok && setup.status !== 409) {
+    throw new Error(`POST /setup answered ${setup.status}: ${JSON.stringify(setup.data)}`);
+  }
+  const login = await admin.call('POST', '/users/login', ADMIN, {allowFailure: true});
+  if (!login.ok) {
+    throw new Error(`Signing in as ${ADMIN.emailAddress} failed (${login.status}). The instance was set up ` +
+      'with another administrator; start the stack fresh.');
+  }
+  admin.token = login.data.token;
+  return admin;
+};
+
+/**
+ * Starts the account over: deleted if it exists, then signed up again through an invitation of
+ * the admin, which makes the account active at once.
+ */
+const freshAccount = async (api, admin, role = '') => {
   const {email, password} = accountFor(api.lang, role);
   const existing = await api.call('POST', '/users/login', {emailAddress: email, password}, {allowFailure: true});
   if (existing.ok) {
@@ -67,11 +88,12 @@ const freshAccount = async (api, role = '') => {
     await api.call('DELETE', '/users/self');
     api.token = undefined;
   }
-  await api.post('/users/signup', {emailAddress: email, password});
+  const invitation = await admin.post('/admin/invitations', {validForDays: 1, sendTo: null});
+  await api.post('/users/signup', {emailAddress: email, password, invitation: invitation.id});
   const login = await api.call('POST', '/users/login', {emailAddress: email, password}, {allowFailure: true});
   if (!login.ok) {
-    throw new Error(`Signing in as ${email} failed (${login.status}). The apiserver must activate accounts ` +
-      'on signup (opencookbook.activate-users-after-signup), as the one in docker-compose.yml does.');
+    throw new Error(`Signing in as ${email} failed (${login.status}). Accounts signed up with an invitation ` +
+      'must be active at once; is the apiserver from the setup release?');
   }
   api.token = login.data.token;
   return login.data;
@@ -155,9 +177,9 @@ const seedShoppingList = async (api, monday) => {
 
 // Not part of seed(): a household adds switchers to the week plan, the shopping list and the recipe list,
 // which the other screenshots should not show. The household shot calls it right before it is taken.
-const seedHousehold = async (api, apiUrl) => {
+const seedHousehold = async (api, admin, apiUrl) => {
   const partner = new Api(apiUrl, api.lang);
-  await freshAccount(partner, '-partner');
+  await freshAccount(partner, admin, '-partner');
   await partner.post('/users/self/onboarding', {displayName: PARTNER_NAME});
 
   const household = await api.post('/households', {name: HOUSEHOLD_NAME, shareRecipes: true});
@@ -190,8 +212,9 @@ const seedPlanDraft = async (api, monday) => {
  *   draftId: number, createHousehold: () => Promise<string>}>}
  */
 export const seed = async ({apiUrl, lang, photosDir, now = new Date()}) => {
+  const admin = await signInAsAdmin(apiUrl);
   const api = new Api(apiUrl, lang);
-  const tokens = await freshAccount(api);
+  const tokens = await freshAccount(api, admin);
   await api.post('/users/self/onboarding', {displayName: DISPLAY_NAME});
   await waitForCatalogue(api);
   const recipeIds = await seedRecipes(api, photosDir);
@@ -201,6 +224,6 @@ export const seed = async ({apiUrl, lang, photosDir, now = new Date()}) => {
   const draftId = await seedPlanDraft(api, monday);
   return {
     token: tokens.token, refreshToken: tokens.refreshToken, recipeIds, draftId,
-    createHousehold: () => seedHousehold(api, apiUrl),
+    createHousehold: () => seedHousehold(api, admin, apiUrl),
   };
 };
