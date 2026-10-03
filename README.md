@@ -36,7 +36,7 @@ cd opencookbook/compose
 
 2. Edit the environment variables in the ```.env``` file to your personal needs.
 
-❗ IMPORTANT ❗ at lease change the passwords defined in the ```.env``` file or your installation will be vulnerable
+❗ IMPORTANT ❗ at least change `DB_PASSWORD` or your installation will be vulnerable, and set `INSTANCE_URL` to the public address of your installation without `/app` (e.g. `https://cookbook.example.com` or `http://<server>:3009`). Invitation and password reset links and all mails are built from it.
 
 3. Start docker-compose
 ```
@@ -45,9 +45,13 @@ docker compose up -d
 
 The app is served at `/app`. `/` opens the app as well, unless `LANDING_ENABLED` shows the Cookpal project page there. The legal texts the app shows (`terms.html`, `privacy.html`, `imprint.html`) go into `compose/legal`, see the README there.
 
+### Behind your own reverse proxy
+
+Cookpal counts sign-in attempts per visitor, so a reverse proxy in front (for HTTPS) has to set `X-Forwarded-For`. Traefik, Caddy and Nginx Proxy Manager do that by default; with a hand-written nginx config add `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`.
+
 ### First start
 
-Right after the first start, open `https://<your domain>/admin` (or `http://localhost:3009/admin`). Until the setup is done, whoever gets there first becomes the administrator, so do this immediately.
+Right after the first start, open `https://<your domain>/admin`, or `http://<server>:3009/admin` while you have no domain yet. Until the setup is done, whoever gets there first becomes the administrator, so do this immediately.
 
 1. Create the admin account.
 2. Check the instance overview. It shows how your installation is configured and whether the mail server, the recipe import and the recipe scan work.
@@ -56,7 +60,13 @@ Right after the first start, open `https://<your domain>/admin` (or `http://loca
 
 The app stays closed until the setup is done.
 
-Mail (`SMTP_*` in the `.env`) is optional. Without it, open signups stay locked until an admin activates them in the admin panel, and invitation and password reset links are not mailed but handed over from the admin panel. With it, accounts confirm themselves by mail, and links can be mailed as well.
+Mail is optional and needs `SMTP_*` in the `.env` besides `INSTANCE_URL`. Without it, open signups stay locked until an admin activates them in the admin panel, and invitation and password reset links are not mailed but handed over from the admin panel. With it, accounts confirm themselves by mail, and links can be mailed as well.
+
+### Updating
+
+```
+docker compose pull && docker compose up -d
+```
 
 ### Installation on kubernetes
 TODO

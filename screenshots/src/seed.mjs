@@ -64,8 +64,9 @@ const ADMIN = {emailAddress: 'screenshots-admin@example.com', password: PASSWORD
 const signInAsAdmin = async (apiUrl) => {
   const admin = new Api(apiUrl, 'en');
   const setup = await admin.call('POST', '/setup', ADMIN, {allowFailure: true});
-  if (!setup.ok && setup.status !== 409) {
-    throw new Error(`POST /setup answered ${setup.status}: ${JSON.stringify(setup.data)}`);
+  const alreadySetUp = setup.status === 409 && setup.data?.code === 'SETUP_COMPLETED';
+  if (!setup.ok && !alreadySetUp) {
+    throw new Error(`POST /setup failed (${setup.status}): ${JSON.stringify(setup.data)}`);
   }
   const login = await admin.call('POST', '/users/login', ADMIN, {allowFailure: true});
   if (!login.ok) {
