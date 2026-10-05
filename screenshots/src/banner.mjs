@@ -1,5 +1,5 @@
 /**
- * The social preview image of the landing page: Cookpal's green, the app icon, the name, a
+ * The social preview image of the landing page: CookPal's green, the app icon, the name, a
  * tagline and three screenshots in phone frames. Exactly 1200 x 630, the size link previews use.
  */
 import fs from 'node:fs/promises';
@@ -37,7 +37,7 @@ const template = ({icon, tagline, screenshots}) => `<!doctype html>
 <body>
   <div class="brand">
     <img class="icon" src="${icon}">
-    <div class="name">Cookpal</div>
+    <div class="name">CookPal</div>
     <div class="tagline">${tagline}</div>
   </div>
   ${screenshots.map((screenshot, index) =>

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Takes the Cookpal store screenshots. Needs nothing but Docker: the published app images are
+# Takes the CookPal store screenshots. Needs nothing but Docker: the published app images are
 # pulled and started, and a Playwright container seeds them and takes the pictures.
 #
 #   ./run.sh [--tag TAG] [--apiserver-tag TAG] [--frontend-tag TAG] [--no-pull] [--keep]

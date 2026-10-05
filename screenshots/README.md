@@ -1,6 +1,6 @@
 # Store screenshots
 
-Takes the Google Play screenshots of Cookpal automatically, in English and German. It starts the
+Takes the Google Play screenshots of CookPal automatically, in English and German. It starts the
 published app images with an empty database, fills a demo account with sample recipes, a week plan
 and a shopping list, and photographs the web app in a phone-sized browser.
 

@@ -16,12 +16,12 @@ The base feature. A way to manage your recipes, search for recipes, organize you
 Every recipe has ingredients and preparation steps. Besides your recipe, they are used to estimate the calories and nutrients of your recipe.
 
 ### Recipe Import
-Recipes can be imported from various recipe websites to have all your favorite recipes in one place
+Recipes can be imported from various recipe websites to have all your favorite recipes in one place. Share a page, an Instagram post or a recipe text from any app on Android to CookPal, or paste a link or text on the import screen. Instagram captions and texts open as a draft you check before saving.
 ### Weekplan
-No more indecision about what to cook today. Plan your meals in advance and let cookpal support your selections.
+No more indecision about what to cook today. Plan your meals in advance and let CookPal support your selections.
 
 ### Guided cooking
-What ingredients need to go in next? Cookpal will tell you.
+What ingredients need to go in next? CookPal will tell you.
 
 ## Installation
 OpenCookbook is designed to run without extensive preparation and installation. All you need is a docker or kubernetes environment and you are good to go.
@@ -43,11 +43,11 @@ cd opencookbook/compose
 docker compose up -d
 ```
 
-The app is served at `/app`. `/` opens the app as well, unless `LANDING_ENABLED` shows the Cookpal project page there. The legal texts the app shows (`terms.html`, `privacy.html`, `imprint.html`) go into `compose/legal`, see the README there.
+The app is served at `/app`. `/` opens the app as well, unless `LANDING_ENABLED` shows the CookPal project page there. The legal texts the app shows (`terms.html`, `privacy.html`, `imprint.html`) go into `compose/legal`, see the README there.
 
 ### Behind your own reverse proxy
 
-Cookpal counts sign-in attempts per visitor, so a reverse proxy in front (for HTTPS) has to set `X-Forwarded-For`. Traefik, Caddy and Nginx Proxy Manager do that by default; with a hand-written nginx config add `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`.
+CookPal counts sign-in attempts per visitor, so a reverse proxy in front (for HTTPS) has to set `X-Forwarded-For`. Traefik, Caddy and Nginx Proxy Manager do that by default; with a hand-written nginx config add `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`.
 
 ### First start
 
