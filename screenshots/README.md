@@ -1,8 +1,9 @@
 # Store screenshots
 
-Takes the Google Play screenshots of CookPal automatically, in English and German. It starts the
-published app images with an empty database, fills a demo account with sample recipes, a week plan
-and a shopping list, and photographs the web app in a phone-sized browser.
+Takes the Google Play and landing page screenshots of CookPal automatically, in English and German.
+It starts the published app images with an empty database, fills a demo account with sample recipes,
+a week plan and a shopping list, and photographs the web app in a phone-sized browser, and the kitchen
+tools in a desktop-sized one too.
 
 The only requirement is Docker (with Compose). Nothing else has to be installed or checked out.
 
@@ -10,7 +11,8 @@ The only requirement is Docker (with Compose). Nothing else has to be installed 
 ./run.sh
 ```
 
-Screenshots are written to `out/<language>/phone/`, 1080 x 2160, in dark mode:
+Screenshots are written to `out/<language>/<device>/` in dark mode, at 1080 x 2160 from the phone and
+2240 x 1400 from the desktop (1120 x 700 css px):
 
 | # | Screen | What is shown |
 |---|---|---|
@@ -24,8 +26,10 @@ Screenshots are written to `out/<language>/phone/`, 1080 x 2160, in dark mode:
 | 08 | Nutrition | Shakshuka with its nutrition sheet open |
 | 09 | Week suggestion | The week the planner proposes for next week, before it is accepted |
 | 10 | Household | A household of two: the demo user and a second member |
+| 11 to 18 | Kitchen tools | Each tool with its default inputs; on the desktop the result floats beside the questions |
 
-The store listing uses the first six. The last four are for the landing page.
+The store listing uses the first six. The others are for the landing page; only the kitchen tools are
+also taken on the desktop.
 
 ## Options
 
@@ -48,8 +52,8 @@ If a shot fails, the screen at that moment is saved as `*.failed.png` next to wh
 
 ## Screenshots for the landing page
 
-Besides the store screenshots, every shot is written as a 720 px wide WebP (quality 90) to
-`out/landing/src/assets/screenshots/<language>/<name>.webp`, and a 1200 x 630 social preview banner (the app
+Besides the store screenshots, every shot is written as a WebP (quality 90, 720 px wide from the phone, 1680 px from the desktop) to
+`out/landing/src/assets/screenshots/<language>/<device>/<name>.webp`, and a 1200 x 630 social preview banner (the app
 icon, the name, a tagline and three screenshots) to `out/landing/public/og-<language>.png`. `out/landing` is
 cleared at the start of every run. The banner needs the `recipe-list`, `recipe-detail` and `weekplan` shots, so
 a run that leaves them out with `--only` does not render it.
@@ -68,12 +72,12 @@ before the run starts.
 - Screens and how they are set up: `src/shots.mjs`. The few button texts a shot clicks are in
   `LABELS` there and have to follow the app's `en.json` and `de.json`.
 - Recipes, groups, week plan, shopping list and the scanned page: `src/sample-data.mjs`.
-- Screen size, more devices (such as tablets), and light or dark mode: `DEVICES` and `COLOR_SCHEME` in
-  `src/take-screenshots.mjs`.
+- Screen sizes, more devices (such as tablets), and light or dark mode: `DEVICES` and `COLOR_SCHEME` in
+  `src/take-screenshots.mjs`. Which devices a shot is taken on: its `devices` in `src/shots.mjs`.
 
 The web app is served below `/app`, so every page the shots open is `http://web/app/...`. The household
 is only created when the household shot runs, because with one the week plan, the shopping list and the
-recipe list grow switchers that the other shots should not show. That is why it is the last shot.
+recipe list grow switchers that the other shots should not show. That is why it is the last store shot; the tool screens show no switchers.
 
 Changes are picked up on the next `./run.sh`, which rebuilds the runner image from this folder.
 

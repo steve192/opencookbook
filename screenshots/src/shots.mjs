@@ -1,6 +1,7 @@
 /**
- * What to photograph, in store order. Each shot gets a fresh browser page already signed in to
- * the seeded account, and leaves it looking the way the screenshot should.
+ * What to photograph: the store shots in store order, then the kitchen tools. Each shot gets a
+ * fresh browser page already signed in to the seeded account, and leaves it looking the way the
+ * screenshot should.
  */
 
 import {IMPORT_URL} from './sample-data.mjs';
@@ -26,7 +27,7 @@ const onScreen = async (page, locator) => {
   throw new Error(`Nothing on screen matches ${locator}`);
 };
 
-export const SHOTS = [
+const STORE_SHOTS = [
   {
     name: 'recipe-list',
     open: async ({go}) => go('myRecipes'),
@@ -140,6 +141,30 @@ export const SHOTS = [
     name: 'household',
     open: async ({go, createHousehold}) => go(`household?householdId=${await createHousehold()}`),
   },
+];
+
+// The kitchen tools, by their path in the app, for their landing pages, with inputs a link can carry. The pizza is
+// baked at lunchtime: its overnight rise would be mixed in the middle of the night for the default dinner.
+const TOOLS = [
+  {slug: 'pizza-dough', inputs: {bakeTime: '13:00'}}, {slug: 'bread'}, {slug: 'yeast-converter'},
+  {slug: 'oven-converter'}, {slug: 'party-planner'}, {slug: 'seasonal-calendar'}, {slug: 'coffee'}, {slug: 'tea'},
+];
+
+// Each shot names the devices it is taken on. The tools are taken on a desktop too, where the result
+// floats beside the questions.
+export const SHOTS = [
+  ...STORE_SHOTS.map((shot) => ({...shot, devices: ['phone']})),
+  ...TOOLS.map(({slug, inputs}) => ({
+    name: `tool-${slug}`,
+    devices: ['phone', 'desktop'],
+    open: async ({page, go}) => {
+      const query = inputs ? '?i=' + encodeURIComponent(JSON.stringify(inputs)) : '';
+      await go(`tools/${slug}${query}`);
+      // The seasonal calendar loads its months and recipes after the page; slow on the first call.
+      await page.waitForFunction(() => !document.querySelector('[role="progressbar"]'));
+      await page.waitForTimeout(400);
+    },
+  })),
 ];
 
 export const labelsFor = (lang) => LABELS[lang];

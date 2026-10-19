@@ -26,23 +26,26 @@ const API_URL = process.env.COOKPAL_API_URL.replace(/\/$/, '');
 const PHOTOS_DIR = path.join(root, 'assets', 'photos');
 const OUT_DIR = path.join(root, 'out');
 
-// As wide as most current phones (393 css px), exported at 1080 x 2160: 1:2 is as tall as Google
-// Play accepts, since neither side may be more than twice the other.
+// The phone is as wide as most current phones (393 css px), exported at 1080 x 2160: 1:2 is as tall
+// as Google Play accepts, since neither side may be more than twice the other. The desktop is wide
+// enough for the screens that put two columns side by side. landingWidth is the WebP's width.
 const DEVICES = [
-  {name: 'phone', viewport: {width: 393, height: 786}, deviceScaleFactor: 1080 / 393},
+  {name: 'phone', landingWidth: 720,
+    context: {viewport: {width: 393, height: 786}, deviceScaleFactor: 1080 / 393, isMobile: true, hasTouch: true}},
+  {name: 'desktop', landingWidth: 1680,
+    context: {viewport: {width: 1120, height: 700}, deviceScaleFactor: 2}},
 ];
 
 const LOCALES = {en: 'en-US', de: 'de-DE'};
 
-// The landing page gets the phone shots as small WebP files, named without their number, and the
-// banner. They are laid out like the landing project, so that run.sh can copy them over as they are.
+// The landing page gets every shot as a WebP file, named without its number, and the banner. They
+// are laid out like the landing project, so that run.sh can copy them over as they are.
 const LANDING_OUT = path.join(OUT_DIR, 'landing');
-const landingShotDir = (lang) => path.join(LANDING_OUT, 'src', 'assets', 'screenshots', lang);
-const LANDING_DEVICE = 'phone';
-const LANDING_WIDTH = 720;
+const landingShotDir = (lang, device) => path.join(LANDING_OUT, 'src', 'assets', 'screenshots', lang, device);
 const LANDING_QUALITY = 90;
 
 // The screenshots of the social preview banner, left to right.
+const BANNER_DEVICE = 'phone';
 const BANNER_SHOTS = ['recipe-list', 'recipe-detail', 'weekplan'];
 
 // The web app is served below /app; the root belongs to the landing page.
@@ -96,13 +99,17 @@ try {
     const scanPhoto = await renderScanPhoto(browser, lang, PHOTOS_DIR, path.join(os.tmpdir(), `scan-${lang}.jpg`));
 
     for (const device of DEVICES) {
+      const deviceShots = shots.filter((shot) => shot.devices.includes(device.name));
+      if (deviceShots.length === 0) {
+        continue;
+      }
       const dir = path.join(OUT_DIR, lang, device.name);
       await fs.mkdir(dir, {recursive: true});
-      await fs.mkdir(landingShotDir(lang), {recursive: true});
+      await fs.mkdir(landingShotDir(lang, device.name), {recursive: true});
 
-      for (const [index, shot] of shots.entries()) {
+      for (const [index, shot] of deviceShots.entries()) {
         const context = await browser.newContext({
-          ...device, isMobile: true, hasTouch: true, locale: LOCALES[lang], colorScheme: COLOR_SCHEME,
+          ...device.context, locale: LOCALES[lang], colorScheme: COLOR_SCHEME,
         });
         // Signed in the way the web app remembers it; only once, so a refreshed token is kept.
         await context.addInitScript(({token, refreshToken, apiUrl}) => {
@@ -122,11 +129,9 @@ try {
         try {
           await shot.open({page, go, settle, labels: labelsFor(lang), scanPhoto, ...account});
           await page.screenshot({path: file});
-          if (device.name === LANDING_DEVICE) {
-            await sharp(file).resize({width: LANDING_WIDTH}).webp({quality: LANDING_QUALITY})
-                .toFile(path.join(landingShotDir(lang), `${shot.name}.webp`));
-          }
-          console.log(`[${lang}] ${index + 1}/${shots.length} ${path.relative(root, file)}`);
+          await sharp(file).resize({width: device.landingWidth}).webp({quality: LANDING_QUALITY})
+              .toFile(path.join(landingShotDir(lang, device.name), `${shot.name}.webp`));
+          console.log(`[${lang}] ${index + 1}/${deviceShots.length} ${path.relative(root, file)}`);
         } catch (error) {
           await page.screenshot({path: file.replace(/\.png$/, '.failed.png')}).catch(() => undefined);
           throw new Error(`Shot "${shot.name}" (${lang}, ${device.name}) failed: ${error.message}`, {cause: error});
@@ -137,7 +142,7 @@ try {
     }
 
     if (takesBanner) {
-      const phoneDir = path.join(OUT_DIR, lang, LANDING_DEVICE);
+      const phoneDir = path.join(OUT_DIR, lang, BANNER_DEVICE);
       const screenshotFiles = BANNER_SHOTS.map((name) => shotFile(phoneDir, name));
       const outFile = path.join(LANDING_OUT, 'public', `og-${lang}.png`);
       await fs.mkdir(path.dirname(outFile), {recursive: true});
