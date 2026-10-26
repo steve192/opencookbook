@@ -152,7 +152,7 @@ const seedWeekplan = async (api, recipeIds, monday) => {
 };
 
 const seedShoppingList = async (api, monday) => {
-  await api.put('/users/self/shoppingProvider', {provider: 'COOKPAL'});
+  await api.put('/users/self/shoppingSettings', {provider: 'COOKPAL'});
   const [list] = await api.get('/shopping/lists');
   // Where each recipe is planned, so an item says which meal it is for.
   const plannedOn = {};
