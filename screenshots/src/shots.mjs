@@ -143,10 +143,9 @@ const STORE_SHOTS = [
   },
 ];
 
-// The kitchen tools, by their path in the app, for their landing pages, with inputs a link can carry. The pizza is
-// baked at lunchtime: its overnight rise would be mixed in the middle of the night for the default dinner.
+// The kitchen tools, by their path in the app, for their landing pages, with inputs a link can carry.
 const TOOLS = [
-  {slug: 'pizza-dough', inputs: {bakeTime: '13:00'}}, {slug: 'bread'}, {slug: 'yeast-converter'},
+  {slug: 'pizza-dough'}, {slug: 'bread'}, {slug: 'yeast-converter'},
   {slug: 'oven-converter'}, {slug: 'party-planner'}, {slug: 'seasonal-calendar'}, {slug: 'coffee'}, {slug: 'tea'},
 ];
 
